@@ -11,8 +11,13 @@ import Foundation
 @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
 public class NativeEngine: NSObject, Engine, URLSessionDataDelegate, URLSessionWebSocketDelegate {
     private var task: URLSessionWebSocketTask?
+    private var maximumMessageSize: Int?
     weak var delegate: EngineDelegate?
-
+    
+    public init(maximumMessageSize: Int? = nil) {
+        self.maximumMessageSize = maximumMessageSize
+    }
+    
     public func register(delegate: EngineDelegate) {
         self.delegate = delegate
     }
@@ -20,6 +25,9 @@ public class NativeEngine: NSObject, Engine, URLSessionDataDelegate, URLSessionW
     public func start(request: URLRequest) {
         let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
         task = session.webSocketTask(with: request)
+        if let maximumMessageSize {
+            task?.maximumMessageSize = maximumMessageSize
+        }
         doRead()
         task?.resume()
     }
